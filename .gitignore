@@ -13,3 +13,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Claude Code / IDE service data (never track)
+/CLAUDE.md
+/.claude/
+/.vs/
