@@ -10,8 +10,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
+import top.rootu.dddplayer.App
 import java.io.File
 import java.io.FileOutputStream
+import java.util.concurrent.TimeUnit
 
 data class UpdateInfo(
     val version: String,
@@ -22,8 +24,19 @@ data class UpdateInfo(
 
 class UpdateManager(private val context: Context) {
 
-    private val client = OkHttpClient()
-    private val repoUrl = "https://api.github.com/repos/usmanec/dddplayer/releases"
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor { chain ->
+            // GitHub API требует User-Agent; заодно просим стабильный формат ответа.
+            val request = chain.request().newBuilder()
+                .header("User-Agent", App.USER_AGENT)
+                .header("Accept", "application/vnd.github+json")
+                .build()
+            chain.proceed(request)
+        }
+        .build()
+    private val repoUrl = "https://api.github.com/repos/levende/dddplayer/releases"
 
     suspend fun checkForUpdates(currentVersionName: String?): UpdateInfo? = withContext(Dispatchers.IO) {
         try {
