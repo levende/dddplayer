@@ -42,7 +42,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "top.rootu.dddplayer"
+        applicationId = "levende.dddplayer"
         minSdk = 23
         targetSdk = 34
         versionCode = gitVersionCode
@@ -58,6 +58,22 @@ android {
         viewBinding = false
     }
 
+    // Ключ подписи берём из переменных окружения (CI). Если их нет
+    // (локальная сборка без ключа) — релиз собирается неподписанным.
+    val releaseKeystoreFile = System.getenv("KEYSTORE_FILE")
+    val hasReleaseSigning = releaseKeystoreFile != null && file(releaseKeystoreFile).exists()
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseKeystoreFile!!)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -65,6 +81,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {

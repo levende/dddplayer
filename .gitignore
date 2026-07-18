@@ -18,3 +18,8 @@ local.properties
 /CLAUDE.md
 /.claude/
 /.vs/
+
+# Signing keystores / secrets (never track)
+*.jks
+*.keystore
+*.base64
